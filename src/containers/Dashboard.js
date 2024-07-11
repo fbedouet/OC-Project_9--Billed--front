@@ -98,16 +98,16 @@ export default class {
       this.counter ++
     } else {
       $(`#open-bill${bill.id}`).css({ background: '#0D5AE5' })
-
+      
       $('.dashboard-right-container div').html(`
         <div id="big-billed-icon" data-testid="big-billed-icon"> ${BigBilledIcon} </div>
-      `)
-      $('.vertical-navbar').css({ height: '120vh' })
-      this.counter ++
-    }
-    $('#icon-eye-d').click(this.handleClickIconEye)
-    $('#btn-accept-bill').click((e) => this.handleAcceptSubmit(e, bill))
-    $('#btn-refuse-bill').click((e) => this.handleRefuseSubmit(e, bill))
+        `)
+        $('.vertical-navbar').css({ height: '120vh' })
+        this.counter ++
+      }
+      $('#icon-eye-d').click(this.handleClickIconEye)
+      $('#btn-accept-bill').click((e) => this.handleAcceptSubmit(e, bill))
+      $('#btn-refuse-bill').click((e) => this.handleRefuseSubmit(e, bill))
   }
 
   handleAcceptSubmit = (e, bill) => {
@@ -131,22 +131,26 @@ export default class {
   }
 
   handleShowTickets(e, bills, index) {
-    if (this.counter === undefined || this.index !== index) this.counter = 0
+    if (this.counter === undefined || this.index !== index) this.counter = 0 //used to close or open collapsible menu
     if (this.index === undefined || this.index !== index) this.index = index
-    if (this.counter % 2 === 0) {
+    if (this.counter % 2 === 0) { //even counter = unfold menu
       $(`#arrow-icon${this.index}`).css({ transform: 'rotate(0deg)'})
-      $(`#status-bills-container${this.index}`)
-        .html(cards(filteredBills(bills, getStatus(this.index))))
+      $(`#status-bills-container${this.index}`).html(cards(filteredBills(bills, getStatus(this.index))))
       this.counter ++
-    } else {
+    } else { //odd counter = fold menu
       $(`#arrow-icon${this.index}`).css({ transform: 'rotate(90deg)'})
       $(`#status-bills-container${this.index}`)
-        .html("")
+      .html("")
       this.counter ++
     }
 
     bills.forEach(bill => {
-      $(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills))
+      const isPending = bill.status === "pending" && this.index===1
+      const isAccepted = bill.status === "accepted" && this.index===2
+      const isRefused = bill.status === "refused" && this.index===3
+      if (isPending || isAccepted || isRefused){
+        $(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills))
+      }
     })
 
     return bills
