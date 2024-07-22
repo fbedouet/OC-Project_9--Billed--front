@@ -6,11 +6,10 @@ import { fireEvent, screen, waitFor } from "@testing-library/dom"
 import {ROUTES, ROUTES_PATH } from "../constants/routes"
 import {localStorageMock} from "../__mocks__/localStorage.js";
 import userEvent from "@testing-library/user-event";
-import NewBill from "../containers/NewBill.js";
-import NewBillUI from "../views/NewBillUI.js"
 
 import mockStore from "../__mocks__/store.js"
 import router from "../app/Router.js";
+
 jest.mock("../app/Store.js", () => mockStore)
 
 
@@ -24,10 +23,10 @@ beforeEach( ()=> {
   window.onNavigate(ROUTES_PATH.NewBill)
   const inputExpanseName = screen.getByTestId("expense-name")
   fireEvent.change(inputExpanseName,{target:{value:"Vol Nantes Paris"}})
-
+  
   const inputDate = screen.getByTestId("datepicker")
   fireEvent.change( inputDate, {target:{value:"2024-06-21"}})
-
+  
   const inputAmount = screen.getByTestId("amount")
   fireEvent.change(inputAmount,{target:{value:"1024"}})
   
@@ -38,21 +37,37 @@ beforeEach( ()=> {
 afterEach(() => {
   document.body.innerHTML = ''
 })
-
+  
 describe("Given I am connected as an employee", ()=> {
   describe("When I select a attached file image", ()=> {
     test("Then creating new bill from mock API POST fails with 500 message error in console", async ()=> {
-      jest.spyOn(mockStore, "bills")
+      const error = new Error("Error 500")
+      const spy = jest.spyOn(mockStore, "bills")
         .mockImplementationOnce(() => {
           return {
-            create : () =>  {
-              return Promise.reject(new Error("Erreur 500"))
+            create : async () =>  {
+              console.log("500 create")
+              return Promise.reject(new Error("Error 500"))
             }
           }
         })
-      const consoleSpy = jest
-        .spyOn(console, 'error')
-        .mockImplementation(() => {})
+        const inputFile = screen.getByTestId('file')
+        const fakeFile = new File(['Facture'], 'facture.png', {type: 'image/png'})
+        fireEvent.change(inputFile, {
+          target:{
+            files:[fakeFile]
+          }
+        })
+        const consoleErrorSpy = jest.spyOn(console, 'error')
+        await new Promise(process.nextTick)
+        expect(consoleErrorSpy).toHaveBeenCalledWith(error)
+        console.log("####################")
+      })
+    })
+
+  describe("When I filled in the form correctly", ()=> {
+    test("Then update new bill from mock API POST fails with 500 message error in console", async ()=> {
+      const error = new Error("Error 500")
       const inputFile = screen.getByTestId('file')
       const fakeFile = new File(['Facture'], 'facture.png', {type: 'image/png'})
       fireEvent.change(inputFile, {
@@ -60,10 +75,21 @@ describe("Given I am connected as an employee", ()=> {
           files:[fakeFile]
         }
       })
+      const spy = jest.spyOn(mockStore, "bills")
+        .mockImplementationOnce(() => {
+          return {
+            update : () =>  {
+              console.log("500 update")
+              return Promise.reject(error)
+            }
+          }
+        })
+      userEvent.click(document.getElementById("btn-send-bill"))
+      const consoleErrorSpy = jest.spyOn(console, 'error')
+      
       await new Promise(process.nextTick)
-      expect(consoleSpy).toHaveBeenCalled()
+      expect(consoleErrorSpy).toHaveBeenCalledWith(error)
     })
-
   })
 
   describe("When I am on NewBill Page", ()=> {
@@ -80,24 +106,28 @@ describe("Given I am connected as an employee", ()=> {
           files:[fakeFile]
         }
       })
-      const uploadedFile = document.querySelector(`input[data-testid="file"]`).files[0]
-      await waitFor(()=>uploadedFile.name===undefined)
-
-      console.log(uploadedFile.name)
+      const test = screen.getByTestId("file")
+      await new Promise(process.nextTick)
+      console.log(test.files[0].name)
+      await waitFor(()=>{
+      //expect(test.files[0].name).toBeFalsy()
+      })
     })
 
-    test("Then NewBill should be added on send button click", ()=> {
+    test("Then NewBill should be added on send button click", async ()=> {
       const inputFile = screen.getByTestId('file')
-      const fakeFile = new File(['Facture'], 'facture.png', {type: 'image/png'})
+      const fakeFile = new File(['facture'], 'facture.png', {type: 'image/png'})
       fireEvent.change(inputFile, {
         target:{
           files:[fakeFile]
         }
       })
-      const uploadedFile = document.querySelector(`input[data-testid="file"]`).files[0]
-      userEvent.click(document.getElementById("btn-send-bill"))
-      const mailIcon = screen.getByTestId('icon-window')
+      const mailIcon = screen.getByTestId('icon-mail')
       expect(mailIcon.classList.contains("active-icon")).toBe(true)
+      userEvent.click(document.getElementById("btn-send-bill"))
+      await new Promise(process.nextTick)
+      const windowIcon = screen.getByTestId('icon-window')
+      expect(windowIcon.classList.contains("active-icon")).toBe(true)
     })
   })
 

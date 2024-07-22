@@ -61,12 +61,11 @@ export default class NewBill {
       status: 'pending'
     }
     this.updateBill(bill)
-    this.onNavigate(ROUTES_PATH['Bills'])
+    // this.onNavigate(ROUTES_PATH['Bills'])
   }
 
   // not need to cover this function by tests
   updateBill = (bill) => {
-    if(!bill.email) return
     if (this.store) {
       this.store
       .bills()
