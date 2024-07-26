@@ -1,6 +1,12 @@
 import { ROUTES_PATH } from '../constants/routes.js'
 import Logout from "./Logout.js"
 
+const ACCEPTED_FILE_FORMATS = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+]
+
 export default class NewBill {
   constructor({ document, onNavigate, store, localStorage }) {
     this.document = document
@@ -16,32 +22,36 @@ export default class NewBill {
     new Logout({ document, localStorage, onNavigate })
   }
   handleChangeFile = e => {
-    e.preventDefault()
-    const file = this.document.querySelector(`input[data-testid="file"]`).files[0]
+    const file = e.target.files[0]
+
+    if (!ACCEPTED_FILE_FORMATS.includes(file.type)) {
+      e.target.files = []
+      e.target.value = ''
+      return
+    }
+
     const filePath = e.target.value.split(/\\/g)
     const fileName = filePath[filePath.length-1]
     const formData = new FormData()
     const email = JSON.parse(localStorage.getItem("user")).email
     formData.append('file', file)
     formData.append('email', email)
-    if(file.type==="image/jpeg"||file.type==="image/png"){
-      this.store
-        .bills()
-        .create({
-          data: formData,
-          headers: {
-            noContentType: true
-          }
-        })
-        .then(({fileUrl, key}) => {
-          console.log(key)
-          this.billId = key
-          this.fileUrl = fileUrl
-          this.fileName = fileName
-        }).catch(error => console.error(error))
-    }else{
-      this.document.querySelector(`input[data-testid="file"]`).value=""
-    }
+
+    this.store
+      .bills()
+      .create({
+        data: formData,
+        headers: {
+          noContentType: true
+        }
+      })
+      .then(({fileUrl, key}) => {
+        console.log(key)
+        this.billId = key
+        this.fileUrl = fileUrl
+        this.fileName = fileName
+      })
+      .catch(error => console.error(error))
   }
 
   handleSubmit = e => {

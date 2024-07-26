@@ -46,7 +46,6 @@ describe("Given I am connected as an employee", ()=> {
         .mockImplementationOnce(() => {
           return {
             create : async () =>  {
-              console.log("500 create")
               return Promise.reject(new Error("Error 500"))
             }
           }
@@ -61,7 +60,6 @@ describe("Given I am connected as an employee", ()=> {
         const consoleErrorSpy = jest.spyOn(console, 'error')
         await new Promise(process.nextTick)
         expect(consoleErrorSpy).toHaveBeenCalledWith(error)
-        console.log("####################")
       })
     })
 
@@ -108,10 +106,8 @@ describe("Given I am connected as an employee", ()=> {
       })
       const test = screen.getByTestId("file")
       await new Promise(process.nextTick)
-      console.log(test.files[0].name)
-      await waitFor(()=>{
-      //expect(test.files[0].name).toBeFalsy()
-      })
+      expect(test.files.length).toBe(0)
+      expect(test.value).toBe('')
     })
 
     test("Then NewBill should be added on send button click", async ()=> {

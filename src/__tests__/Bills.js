@@ -67,8 +67,6 @@ describe("Given I am employee",()=>{
     const root = document.createElement("div")
     root.setAttribute("id", "root")
     document.body.append(root)
-    //router()
-    //window.onNavigate(ROUTES_PATH.Bills)
   })
   afterEach(() => {
     document.body.innerHTML = ''
@@ -94,6 +92,22 @@ describe("Given I am employee",()=>{
       router()
       await new Promise(process.nextTick)
       const erreurMsg = screen.getByText(/Erreur 404/)
+      expect(erreurMsg).toBeTruthy()
     })
+
+    test("fetches bills from an API and fails with 500 message error", async()=>{
+      jest.spyOn(mockStore, "bills")
+        .mockImplementationOnce(() => {
+          return {
+            list : () =>  {
+              return Promise.reject(new Error("Erreur 500"))
+            }
+          }})
+      router()
+      await new Promise(process.nextTick)
+      const erreurMsg = screen.getByText(/Erreur 500/)
+      expect(erreurMsg).toBeTruthy()
+    })
+
   })
 })
