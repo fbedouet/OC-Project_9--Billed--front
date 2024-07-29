@@ -81,7 +81,7 @@ describe("Given I am employee",()=>{
       
     })
 
-    test("fetches bills from an API and fails with 404 message error", async()=>{
+    test("An 404 error message is displayed when the API returns a 404 when fetching bills", async()=>{
       jest.spyOn(mockStore, "bills")
         .mockImplementationOnce(() => {
           return {
@@ -95,7 +95,7 @@ describe("Given I am employee",()=>{
       expect(erreurMsg).toBeTruthy()
     })
 
-    test("fetches bills from an API and fails with 500 message error", async()=>{
+    test("An 500 error message is displayed when the API returns a 500 when fetching bills", async()=>{
       jest.spyOn(mockStore, "bills")
         .mockImplementationOnce(() => {
           return {
