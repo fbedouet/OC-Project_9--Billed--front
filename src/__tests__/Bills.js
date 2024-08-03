@@ -48,13 +48,15 @@ describe("Given I am connected as an employee", () => {
   })
 
   describe("when click on eye icon on bill", ()=>{
-    test("display should be displayed", async ()=>{
+    test("modal justificatif should be displayed", async ()=>{
       const modalMock = $.fn.modal = jest.fn()
       await waitFor(() => screen.getByText("Mes notes de frais"))
       const eyeIcon = document.getElementById("eye")
       const test=document.getElementById("modaleFile")
       userEvent.click(eyeIcon)
       expect(modalMock).toHaveBeenCalledWith('show')
+      //screen.debug(screen.getByTestId("modaleFileUser"))
+      expect(screen.getByText("Justificatif")).toBeTruthy // Bien présente mais la class="modal fade" sans show puis que jquery est virtualisé
     })
   })
 })
@@ -77,36 +79,29 @@ describe("Given I am employee",()=>{
       router()
       await waitFor(() => screen.getByText("Mes notes de frais"))
       const testName = screen.getByText("Mes notes de frais")
-      expect(testName.innerHTML).toEqual(" Mes notes de frais ")
-      
+      expect(screen.getByText("Transports")).toBeTruthy
     })
+  })
 
-    test("An 404 error message is displayed when the API returns a 404 when fetching bills", async()=>{
-      jest.spyOn(mockStore, "bills")
-        .mockImplementationOnce(() => {
-          return {
-            list : () =>  {
-              return Promise.reject(new Error("Erreur 404"))
-            }
-          }})
+  describe("when the API returns a 404 when fetching bills",()=>{ 
+    test("An 404 error message is displayed", async()=>{
+      mockStore.setShouldRejectList("Erreur 404")
       router()
       await new Promise(process.nextTick)
       const erreurMsg = screen.getByText(/Erreur 404/)
       expect(erreurMsg).toBeTruthy()
+      mockStore.setShouldRejectList(false)
     })
+  })
 
-    test("An 500 error message is displayed when the API returns a 500 when fetching bills", async()=>{
-      jest.spyOn(mockStore, "bills")
-        .mockImplementationOnce(() => {
-          return {
-            list : () =>  {
-              return Promise.reject(new Error("Erreur 500"))
-            }
-          }})
+  describe("when the API returns a 500 when fetching bills",()=>{
+    test("An 500 error message is displayed", async()=>{
+      mockStore.setShouldRejectList("Erreur 500")
       router()
       await new Promise(process.nextTick)
       const erreurMsg = screen.getByText(/Erreur 500/)
       expect(erreurMsg).toBeTruthy()
+      mockStore.setShouldRejectList(false)
     })
 
   })

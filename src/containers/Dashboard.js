@@ -145,6 +145,7 @@ export default class {
     }
 
     bills.forEach(bill => {
+      //$(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills))
       const isPending = bill.status === "pending" && this.index===1
       const isAccepted = bill.status === "accepted" && this.index===2
       const isRefused = bill.status === "refused" && this.index===3

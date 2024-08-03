@@ -1,7 +1,7 @@
 import { ROUTES_PATH } from '../constants/routes.js'
 import Logout from "./Logout.js"
 
-const ACCEPTED_FILE_FORMATS = [
+const ACCEPTED_FILE_FORMATS = [ //File format accepted
   'image/jpeg',
   'image/jpg',
   'image/png',
@@ -22,14 +22,20 @@ export default class NewBill {
     new Logout({ document, localStorage, onNavigate })
   }
   handleChangeFile = e => {
+    const justificatifDiv = this.document.querySelector("#justificatif")
+    if(this.document.querySelector(".msgErreur")){
+      this.document.querySelector(".msgErreur").remove()
+    }
     const file = e.target.files[0]
 
-    if (!ACCEPTED_FILE_FORMATS.includes(file.type)) {
-      e.target.files = []
+    if (!ACCEPTED_FILE_FORMATS.includes(file.type)) { //control file format
       e.target.value = ''
+      const message = this.document.createElement("p")
+      message.classList.add("msgErreur")
+      message.innerHTML="format incorrect"
+      justificatifDiv.appendChild(message)
       return
     }
-
     const filePath = e.target.value.split(/\\/g)
     const fileName = filePath[filePath.length-1]
     const formData = new FormData()
@@ -46,7 +52,6 @@ export default class NewBill {
         }
       })
       .then(({fileUrl, key}) => {
-        console.log(key)
         this.billId = key
         this.fileUrl = fileUrl
         this.fileName = fileName
@@ -71,7 +76,7 @@ export default class NewBill {
       status: 'pending'
     }
     this.updateBill(bill)
-    // this.onNavigate(ROUTES_PATH['Bills'])
+    this.onNavigate(ROUTES_PATH['Bills'])
   }
 
   // not need to cover this function by tests
