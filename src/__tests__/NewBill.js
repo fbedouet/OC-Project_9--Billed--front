@@ -109,7 +109,8 @@ describe("Given I am connected as an employee on new bill page", ()=> {
   })
   
   describe("When I send new bill by clicking on send ", ()=> {
-    test("Then NewBill should be call POST API with create method, call PATCH api update method, and go back to Bills page", async ()=> {
+
+    test("Then NewBill should be call POST API with create method, call PATCH API with update method, and go back to Bills page", async ()=> {
       //Constante des valeurs attendu
       const valeur =         {
         data: '{"type":"Transports","name":"Vol Nantes Paris","amount":1024,"date":"2024-06-21","vat":"","pct":20,"commentary":"","fileUrl":"https://localhost:3456/images/test.jpg","fileName":"","status":"pending"}',
@@ -120,43 +121,24 @@ describe("Given I am connected as an employee on new bill page", ()=> {
       const inputFile = screen.getByTestId('file')
       const fakeFile = new File(['facture'], 'facture.png', {type: 'image/png'})
       
-      //Espion d'appel de la fonction Create du mock API, Create appelant this.api.post dans app/Store.js
-      const spyCreate = jest.spyOn(mockStore, 'bills')
-      .mockImplementationOnce(() => {
-        return {
-          create: () => {
-            return Promise.resolve({fileUrl: 'https://localhost:3456/images/test.jpg', key: '1234'});
-          },
-        }
-      })
-      
       //Injection de l'image du justificatif dans l'input file
       fireEvent.change(inputFile, {
         target:{
           files:[fakeFile]
         }
       })
-      await spyCreate().create()
+      //await spyCreate().create()
+      await new Promise(process.nextTick)
 
       //Vérification que l'image de justificatif est bien pris en compte et que la fonction Create à été appelé
       expect(inputFile.files[0].type).toBe("image/png")
-      expect(spyCreate).toBeCalled()
 
-      //Espion d'appel de la fonction Update du mock API, Update appelant this.api.patch dans app/Store.js
-      const spyUpdate = jest.spyOn(mockStore, 'bills')
-      .mockImplementationOnce(() => {
-        return {
-          update: (e) => {
-            return Promise.resolve(console.log(e));
-          },
-        }
-      })
       //Espion du console.log de retour de l'espion de la fonction Update
       const consoleLogSpy = jest.spyOn(console, 'log').mockImplementationOnce(()=>{})
 
       //simulation du click sur l'icone envoyer
       userEvent.click(document.getElementById("btn-send-bill"))
-      await spyUpdate().update()
+      //await spyUpdate().update()
 
       //Vérification de la concordance entre les valeurs attendu et les valeur de retour de create dans la console
       expect(consoleLogSpy).toHaveBeenCalledWith(valeur)
