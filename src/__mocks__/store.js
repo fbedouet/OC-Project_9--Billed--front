@@ -73,7 +73,7 @@ const mockedBills = {
     if (shouldRejectCreate) {
       return Promise.reject(new Error("Error 500"))
     } else {
-      return Promise.resolve({fileUrl: 'https://localhost:3456/images/test.jpg', key: '1234'});
+      return Promise.resolve({fileUrl: 'https://localhost:3456/images/test.jpg', key: '1234'})
     }
   },
   // create(bill) {
