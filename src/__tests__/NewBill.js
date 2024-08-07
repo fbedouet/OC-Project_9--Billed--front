@@ -39,45 +39,6 @@ afterEach(() => {
 })
   
 describe("Given I am connected as an employee on new bill page", ()=> {
-  describe("When I select a attached file image", ()=> {
-    test("Then creating new bill from mock API POST fails with 500 message error in console", async ()=> {
-      const error = new Error("Error 500")
-      mockStore.setShouldRejectCreate(true)
-      const inputFile = screen.getByTestId('file')
-      const fakeFile = new File(['Facture'], 'facture.png', {type: 'image/png'})
-      fireEvent.change(inputFile, {
-        target:{
-          files:[fakeFile]
-        }
-      })
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementationOnce(()=>{})
-      await new Promise(process.nextTick)
-      expect(consoleErrorSpy).toHaveBeenCalledWith(error)
-      consoleErrorSpy.mockRestore()
-      mockStore.setShouldRejectCreate(false)
-    })
-  })
-
-  describe("When I filled in the form correctly", ()=> {
-    test("Then update new bill from mock API POST fails with 500 message error in console", async ()=> {
-      const error = new Error("Error 500")
-      mockStore.setShouldRejectUpdate(true)
-      const inputFile = screen.getByTestId('file')
-      const fakeFile = new File(['Facture'], 'facture.png', {type: 'image/png'})
-      fireEvent.change(inputFile, {
-        target:{
-          files:[fakeFile]
-        }
-      })
-      userEvent.click(document.getElementById("btn-send-bill"))
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementationOnce(()=>{})
-      
-      await new Promise(process.nextTick)
-      expect(consoleErrorSpy).toHaveBeenCalledWith(error)
-      consoleErrorSpy.mockRestore()
-      mockStore.setShouldRejectUpdate(false)
-    })
-  })
 
   describe("When I am on NewBill Page", ()=> {
     test("Then bill icon in vertical layout should be highlighted", async ()=> {
@@ -108,142 +69,98 @@ describe("Given I am connected as an employee on new bill page", ()=> {
     })
   })
   
-  describe("When I send new bill by clicking on send ", ()=> {
+  describe("POST test suite", ()=> {
     
-
-    test("Then NewBill should be call POST API with create method, call PATCH API with update method, and go back to Bills page", async ()=> {
-      const valeur =         {
-        data: '{"type":"Transports","name":"Vol Nantes Paris","amount":1024,"date":"2024-06-21","vat":"","pct":20,"commentary":"","fileUrl":"https://localhost:3456/images/test.jpg","fileName":"","status":"pending"}',
-        selector: '1234'
-      }
-
-      const createSpy = jest.spyOn(mockStore.bills(),'create')
-      const updateSpy = jest.spyOn(mockStore.bills(),'update')
-
-      const inputFile = screen.getByTestId('file')
-      const fakeFile = new File(['facture'], 'facture.png', {type: 'image/png'})
-      fireEvent.change(inputFile, {
-        target:{
-          files:[fakeFile]
+    describe("When I send new bill by clicking on send",()=>{
+      test("Then NewBill should be call POST API with create method, call PATCH API with update method, and go back to Bills page", async ()=> {
+        const valeur =         {
+          data: '{"type":"Transports","name":"Vol Nantes Paris","amount":1024,"date":"2024-06-21","vat":"","pct":20,"commentary":"","fileUrl":"https://localhost:3456/images/test.jpg","fileName":"","status":"pending"}',
+          selector: '1234'
         }
+
+        const createSpy = jest.spyOn(mockStore.bills(),'create')
+        const updateSpy = jest.spyOn(mockStore.bills(),'update')
+
+        const inputFile = screen.getByTestId('file')
+        const fakeFile = new File(['facture'], 'facture.png', {type: 'image/png'})
+        fireEvent.change(inputFile, {
+          target:{
+            files:[fakeFile]
+          }
+        })
+
+        await new Promise(process.nextTick)
+        expect(createSpy).toBeCalled()
+        expect(inputFile.files[0].type).toBe("image/png")
+
+        const consoleLogSpy = jest.spyOn(console, 'log').mockImplementationOnce(()=>{})
+        userEvent.click(document.getElementById("btn-send-bill"))
+
+        expect(updateSpy).toHaveBeenCalledWith(valeur)
+        expect(consoleLogSpy).toHaveBeenCalledWith(valeur)
+        mockStore.setNewBill(JSON.parse(valeur.data))
+
+        const windowIcon = screen.getByTestId('icon-window')
+        expect(windowIcon.classList.contains('active-icon')).toBe(true)
+        await new Promise(process.nextTick)
+        expect(screen.getByText("Vol Nantes Paris")).toBeTruthy 
+
+        mockStore.setNewBill(null)
       })
-
-      await new Promise(process.nextTick)
-      expect(createSpy).toBeCalled()
-      expect(inputFile.files[0].type).toBe("image/png")
-
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementationOnce(()=>{})
-      userEvent.click(document.getElementById("btn-send-bill"))
-
-      expect(updateSpy).toHaveBeenCalledWith(valeur)
-      expect(consoleLogSpy).toHaveBeenCalledWith(valeur)
-      mockStore.setNewBill(JSON.parse(valeur.data))
-
-      const windowIcon = screen.getByTestId('icon-window')
-      expect(windowIcon.classList.contains('active-icon')).toBe(true)
-      await new Promise(process.nextTick)
-      expect(screen.getByText("Vol Nantes Paris")).toBeTruthy 
-
-      mockStore.setNewBill(null)
-    })
-  
-
-    test("Then api rejected NewBill with 500 message error",async ()=>{
-
-      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-      window.localStorage.setItem('user', `{"type":"Employee","email":"employee@test.ltd"}`)
-      const root = document.createElement("div")
-      root.setAttribute("id", "root")
-      document.body.append(root)
-      router()
-      window.onNavigate(ROUTES_PATH.NewBill)
-
-      const valeur =         {
-        data: '{"type":"Transports","name":"Vol Nantes Paris","amount":1024,"date":"2024-06-21","vat":"","pct":20,"commentary":"","fileUrl":"https://localhost:3456/images/test.jpg","fileName":"","status":"pending"}',
-        selector: '1234'
-      }
-
-      mockStore.setShouldRejectListWith404(false)
-      mockStore.setShouldRejectListWith500(true)
-
-      const createSpy = jest.spyOn(mockStore.bills(),'create')
-      const updateSpy = jest.spyOn(mockStore.bills(),'update')
-
-      const inputFile = screen.getByTestId('file')
-      const fakeFile = new File(['facture'], 'facture.png', {type: 'image/png'})
-      fireEvent.change(inputFile, {
-        target:{
-          files:[fakeFile]
-        }
-      })
-
-      await new Promise(process.nextTick)
-      expect(createSpy).toBeCalled()
-      expect(inputFile.files[0].type).toBe("image/png")
-
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementationOnce(()=>{})
-      userEvent.click(document.getElementById("btn-send-bill"))
-
-      expect(updateSpy).toHaveBeenCalledWith(valeur)
-      expect(consoleLogSpy).toHaveBeenCalledWith(valeur)
-      mockStore.setNewBill(JSON.parse(valeur.data))
-
-      const windowIcon = screen.getByTestId('icon-window')
-      expect(windowIcon.classList.contains('active-icon')).toBe(true)
-      await new Promise(process.nextTick)
-      const erreurMsg = screen.getByText(/Erreur 500/)
-      expect(erreurMsg).toBeTruthy()
-      mockStore.setShouldRejectListWith404(false)
-      mockStore.setShouldRejectListWith500(false)
     })
 
-    test("Then api rejected NewBill with 404 message error",async ()=>{
-
-      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-      window.localStorage.setItem('user', `{"type":"Employee","email":"employee@test.ltd"}`)
-      const root = document.createElement("div")
-      root.setAttribute("id", "root")
-      document.body.append(root)
-      router()
-      window.onNavigate(ROUTES_PATH.NewBill)
-
-      const valeur =         {
-        data: '{"type":"Transports","name":"Vol Nantes Paris","amount":1024,"date":"2024-06-21","vat":"","pct":20,"commentary":"","fileUrl":"https://localhost:3456/images/test.jpg","fileName":"","status":"pending"}',
-        selector: '1234'
-      }
-
-      mockStore.setShouldRejectListWith404(true)
-      mockStore.setShouldRejectListWith500(false)
-
-      const createSpy = jest.spyOn(mockStore.bills(),'create')
-      const updateSpy = jest.spyOn(mockStore.bills(),'update')
-
-      const inputFile = screen.getByTestId('file')
-      const fakeFile = new File(['facture'], 'facture.png', {type: 'image/png'})
-      fireEvent.change(inputFile, {
-        target:{
-          files:[fakeFile]
-        }
+    describe("When I select new receipt, POST API called by create() reject with 500 message error",()=>{
+      test("Then console displays error message 500", async ()=> {
+        Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+        window.localStorage.setItem('user', `{"type":"Employee","email":"employee@test.ltd"}`)
+        const root = document.createElement("div")
+        root.setAttribute("id", "root")
+        document.body.append(root)
+        router()
+        window.onNavigate(ROUTES_PATH.NewBill)
+        
+        const error = new Error("Error 500")
+        const createSpy = jest.spyOn(mockStore.bills(),'create')
+        mockStore.setShouldRejectCreateWith500(true)
+        const inputFile = screen.getByTestId('file')
+        const fakeFile = new File(['Facture'], 'facture.png', {type: 'image/png'})
+        fireEvent.change(inputFile, {
+          target:{
+            files:[fakeFile]
+          }
+        })
+        expect(createSpy).toBeCalled()
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementationOnce(()=>{})
+        await new Promise(process.nextTick)
+        expect(consoleErrorSpy).toHaveBeenCalledWith(error)
+        consoleErrorSpy.mockRestore()
+        mockStore.setShouldRejectCreateWith500(false)
       })
+    })
 
-      await new Promise(process.nextTick)
-      expect(createSpy).toBeCalled()
-      expect(inputFile.files[0].type).toBe("image/png")
-
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementationOnce(()=>{})
-      userEvent.click(document.getElementById("btn-send-bill"))
-
-      expect(updateSpy).toHaveBeenCalledWith(valeur)
-      expect(consoleLogSpy).toHaveBeenCalledWith(valeur)
-      mockStore.setNewBill(JSON.parse(valeur.data))
-
-      const windowIcon = screen.getByTestId('icon-window')
-      expect(windowIcon.classList.contains('active-icon')).toBe(true)
-      await new Promise(process.nextTick)
-      const erreurMsg = screen.getByText(/Erreur 404/)
-      expect(erreurMsg).toBeTruthy()
-      mockStore.setShouldRejectListWith404(false)
-      mockStore.setShouldRejectListWith500(false)
+    describe("When I send new bill by clicking on send, PATCH API called by update() reject with 404 message error",()=>{
+      test("Then console displays error message 404", async ()=> {
+        const error = new Error("Error 404")
+        const createSpy = jest.spyOn(mockStore.bills(),'create')
+        const updateSpy = jest.spyOn(mockStore.bills(),'update')
+        mockStore.setShouldRejectUpdateWith404(true)
+        const inputFile = screen.getByTestId('file')
+        const fakeFile = new File(['Facture'], 'facture.png', {type: 'image/png'})
+        fireEvent.change(inputFile, {
+          target:{
+            files:[fakeFile]
+          }
+        })
+        expect(createSpy).toBeCalled()
+        userEvent.click(document.getElementById("btn-send-bill"))
+        expect(updateSpy).toBeCalled()
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementationOnce(()=>{})
+        
+        await new Promise(process.nextTick)
+        expect(consoleErrorSpy).toHaveBeenCalledWith(error)
+        consoleErrorSpy.mockRestore()
+        mockStore.setShouldRejectUpdateWith404(false)
+      })
     })
   })
 

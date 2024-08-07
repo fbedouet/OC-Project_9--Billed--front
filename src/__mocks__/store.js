@@ -1,5 +1,7 @@
-let shouldRejectCreate = false
-let shouldRejectUpdate = false
+let shouldRejectCreate500 = false
+let shouldRejectCreate404 = false
+let shouldRejectUpdate500 = false
+let shouldRejectUpdate404 = false
 let shouldRejectList500 = false
 let shouldRejectList404 = false
 let newBill=null
@@ -155,8 +157,11 @@ const mockedBills = {
     }
   },
   create(bill) {
-    if (shouldRejectCreate) {
+    if (shouldRejectCreate500) {
       return Promise.reject(new Error("Error 500"))
+    } 
+    if (shouldRejectCreate404) {
+      return Promise.reject(new Error("Error 404"))
     } else {
       return Promise.resolve({fileUrl: 'https://localhost:3456/images/test.jpg', key: '1234'})
     }
@@ -166,8 +171,11 @@ const mockedBills = {
   //   return Promise.resolve({fileUrl: 'https://localhost:3456/images/test.jpg', key: '1234'})
   // },
   update(bill) {
-    if (shouldRejectUpdate) {
+    if (shouldRejectUpdate500) {
       return Promise.reject(new Error("Error 500"))
+    }
+    if (shouldRejectUpdate404) {
+      return Promise.reject(new Error("Error 404"))
     }else{
       return Promise.resolve(console.log(bill))
       // return Promise.resolve({
@@ -199,11 +207,17 @@ export default {
   bills() {
     return mockedBills;
   },
-  setShouldRejectCreate(value) {
-    shouldRejectCreate = value;
+  setShouldRejectCreateWith404(value) {
+    shouldRejectCreate404 = value;
   },
-  setShouldRejectUpdate(value) {
-    shouldRejectUpdate = value;
+  setShouldRejectCreateWith500(value) {
+    shouldRejectCreate500 = value;
+  },
+  setShouldRejectUpdateWith404(value) {
+    shouldRejectUpdate404 = value;
+  },
+  setShouldRejectUpdateWth500(value) {
+    shouldRejectUpdate500 = value;
   },
   setShouldRejectListWith404(value) {
     shouldRejectList404 = value;
