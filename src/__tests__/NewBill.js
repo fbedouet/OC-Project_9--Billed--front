@@ -111,42 +111,39 @@ describe("Given I am connected as an employee on new bill page", ()=> {
   describe("When I send new bill by clicking on send ", ()=> {
 
     test("Then NewBill should be call POST API with create method, call PATCH API with update method, and go back to Bills page", async ()=> {
-      //Constante des valeurs attendu
       const valeur =         {
         data: '{"type":"Transports","name":"Vol Nantes Paris","amount":1024,"date":"2024-06-21","vat":"","pct":20,"commentary":"","fileUrl":"https://localhost:3456/images/test.jpg","fileName":"","status":"pending"}',
         selector: '1234'
       }
 
-      //Définition de l'image d'un fichier image de justificatif
+      const createSpy = jest.spyOn(mockStore.bills(),'create')
+      const updateSpy = jest.spyOn(mockStore.bills(),'update')
+
       const inputFile = screen.getByTestId('file')
       const fakeFile = new File(['facture'], 'facture.png', {type: 'image/png'})
-      
-      //Injection de l'image du justificatif dans l'input file
       fireEvent.change(inputFile, {
         target:{
           files:[fakeFile]
         }
       })
-      //await spyCreate().create()
-      await new Promise(process.nextTick)
 
-      //Vérification que l'image de justificatif est bien pris en compte et que la fonction Create à été appelé
+      await new Promise(process.nextTick)
+      expect(createSpy).toBeCalled()
       expect(inputFile.files[0].type).toBe("image/png")
 
-      //Espion du console.log de retour de l'espion de la fonction Update
       const consoleLogSpy = jest.spyOn(console, 'log').mockImplementationOnce(()=>{})
-
-      //simulation du click sur l'icone envoyer
       userEvent.click(document.getElementById("btn-send-bill"))
-      //await spyUpdate().update()
 
-      //Vérification de la concordance entre les valeurs attendu et les valeur de retour de create dans la console
+      expect(updateSpy).toHaveBeenCalledWith(valeur)
       expect(consoleLogSpy).toHaveBeenCalledWith(valeur)
+      mockStore.setNewBill(JSON.parse(valeur.data))
+
       const windowIcon = screen.getByTestId('icon-window')
-
-      //vérification du retour sur la page Bills
       expect(windowIcon.classList.contains('active-icon')).toBe(true)
+      await new Promise(process.nextTick)
+      expect(screen.getByText("Vol Nantes Paris")).toBeTruthy 
 
+      mockStore.setNewBill(null)
     })
   })
 
