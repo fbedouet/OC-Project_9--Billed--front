@@ -85,23 +85,27 @@ describe("Given I am employee",()=>{
 
   describe("when the API returns a 404 when fetching bills",()=>{ 
     test("An 404 error message is displayed", async()=>{
-      mockStore.setShouldRejectList("Erreur 404")
+      mockStore.setShouldRejectListWith404(true)
+      mockStore.setShouldRejectListWith500(false)
       router()
       await new Promise(process.nextTick)
       const erreurMsg = screen.getByText(/Erreur 404/)
       expect(erreurMsg).toBeTruthy()
-      mockStore.setShouldRejectList(false)
+      mockStore.setShouldRejectListWith404(false)
+      mockStore.setShouldRejectListWith500(false)
     })
   })
 
   describe("when the API returns a 500 when fetching bills",()=>{
     test("An 500 error message is displayed", async()=>{
-      mockStore.setShouldRejectList("Erreur 500")
+      mockStore.setShouldRejectListWith404(false)
+      mockStore.setShouldRejectListWith500(true)
       router()
       await new Promise(process.nextTick)
       const erreurMsg = screen.getByText(/Erreur 500/)
       expect(erreurMsg).toBeTruthy()
-      mockStore.setShouldRejectList(false)
+      mockStore.setShouldRejectListWith404(false)
+      mockStore.setShouldRejectListWith500(false)
     })
 
   })

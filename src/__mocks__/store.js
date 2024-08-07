@@ -1,12 +1,16 @@
 let shouldRejectCreate = false
 let shouldRejectUpdate = false
-let shouldRejectList = false
+let shouldRejectList500 = false
+let shouldRejectList404 = false
 let newBill=null
 
 const mockedBills = {
   list() {
-    if (shouldRejectList) {
-      return Promise.reject(new Error(shouldRejectList))
+    if (shouldRejectList500) {
+      return Promise.reject(new Error("Erreur 500"))
+    } 
+    if (shouldRejectList404) {
+      return Promise.reject(new Error("Erreur 404"))
     } 
     if(newBill){
       return Promise.resolve([
@@ -201,8 +205,11 @@ export default {
   setShouldRejectUpdate(value) {
     shouldRejectUpdate = value;
   },
-  setShouldRejectList(value) {
-    shouldRejectList = value;
+  setShouldRejectListWith404(value) {
+    shouldRejectList404 = value;
+  },
+  setShouldRejectListWith500(value) {
+    shouldRejectList500 = value;
   },
   setNewBill(value) {
     newBill = value
